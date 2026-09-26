@@ -5,7 +5,7 @@ Agents built on the [OpenAI Agents SDK](https://github.com/openai/openai-agents-
 | Agent | Entry point | What it does |
 |---|---|---|
 | Assistant | `run_agent` / `chat` | Validates contact details and drafts order notifications using `src/notifications` as tools |
-| Image Generator | `generate_image` / `image` | Generates images with the hosted `image_generation` tool (`gpt-image-2.5-sunburst`) and saves them to disk |
+| Jack (image generator) | `generate_image` / `image` | Generates images with the hosted `image_generation` tool (`gpt-image-2.5-sunburst`) and saves them to disk |
 | Image Auditor | `audit_image` / `audit` | Inspects an image with **gpt-6-astra** against a checklist and returns a structured pass/fail report |
 | Pipeline | `generate_and_audit` / `pipeline` | Generates, audits, and retries with the auditor's suggested prompt fix |
 

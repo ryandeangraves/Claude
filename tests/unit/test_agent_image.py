@@ -77,7 +77,8 @@ def _stub_runner(monkeypatch, module, factory):
 class TestImageAgent:
     def test_build(self):
         agent = build_image_agent(_config(), size="1536x1024", quality="high")
-        assert agent.name == IMAGE_AGENT_NAME
+        assert agent.name == IMAGE_AGENT_NAME == "Jack"
+        assert "Jack" in agent.instructions
         assert agent.model == "gpt-test"
         assert len(agent.tools) == 1
         cfg = agent.tools[0].tool_config

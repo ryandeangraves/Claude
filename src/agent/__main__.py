@@ -70,7 +70,7 @@ def main(argv=None) -> int:
     p.add_argument("--usage", action="store_true")
     p.set_defaults(func=_cmd_chat)
 
-    p = sub.add_parser("image", help="Generate an image.")
+    p = sub.add_parser("image", help="Generate an image with Jack.")
     p.add_argument("prompt")
     p.add_argument("--out", default="generated")
     p.add_argument("--size", default="1024x1024")
