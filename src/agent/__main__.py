@@ -74,7 +74,7 @@ def main(argv=None) -> int:
     p.add_argument("prompt")
     p.add_argument("--out", default="generated")
     p.add_argument("--size", default="1024x1024")
-    p.add_argument("--quality", default="auto", choices=["auto", "low", "medium", "high"])
+    p.add_argument("--quality", default="auto", choices=["auto", "low", "medium", "high", "xhigh", "max"])
     p.add_argument("--usage", action="store_true")
     p.set_defaults(func=_cmd_image)
 

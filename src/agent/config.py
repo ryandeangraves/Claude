@@ -9,7 +9,7 @@ from typing import Mapping, Optional
 
 DEFAULT_MODEL = "gpt-4.1-mini"
 DEFAULT_AUDITOR_MODEL = "gpt-6-astra"
-DEFAULT_IMAGE_MODEL = "gpt-image-1"
+DEFAULT_IMAGE_MODEL = "gpt-image-2.5-sunburst"
 DEFAULT_MAX_TURNS = 10
 
 
@@ -46,7 +46,7 @@ def load_config(env: Optional[Mapping[str, str]] = None) -> AgentConfig:
     * ``OPENAI_API_KEY``      (required)
     * ``OPENAI_AGENT_MODEL``  (optional, default ``gpt-4.1-mini``) - assistant + image orchestration
     * ``OPENAI_AUDITOR_MODEL`` (optional, default ``gpt-6-astra``) - auditor (needs vision)
-    * ``OPENAI_IMAGE_MODEL``  (optional, default ``gpt-image-1``) - image_generation tool
+    * ``OPENAI_IMAGE_MODEL``  (optional, default ``gpt-image-2.5-sunburst``) - image_generation tool
     * ``OPENAI_AGENT_MAX_TURNS`` (optional, default 10)
     * ``OPENAI_AGENT_TRACING`` (optional, ``0``/``false`` disables tracing)
     """

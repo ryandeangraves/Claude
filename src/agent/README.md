@@ -5,7 +5,7 @@ Agents built on the [OpenAI Agents SDK](https://github.com/openai/openai-agents-
 | Agent | Entry point | What it does |
 |---|---|---|
 | Assistant | `run_agent` / `chat` | Validates contact details and drafts order notifications using `src/notifications` as tools |
-| Image Generator | `generate_image` / `image` | Generates images with the hosted `image_generation` tool (`gpt-image-1`) and saves them to disk |
+| Image Generator | `generate_image` / `image` | Generates images with the hosted `image_generation` tool (`gpt-image-2.5-sunburst`) and saves them to disk |
 | Image Auditor | `audit_image` / `audit` | Inspects an image with **gpt-6-astra** against a checklist and returns a structured pass/fail report |
 | Pipeline | `generate_and_audit` / `pipeline` | Generates, audits, and retries with the auditor's suggested prompt fix |
 
@@ -24,11 +24,13 @@ The key is read only from the environment. It is never logged, and
 
 ```bash
 python -m src.agent chat "Is +14155552671 a valid phone number?" --usage
-python -m src.agent image "a watercolor red fox" --out ./generated --size 1024x1024 --quality high
+python -m src.agent image "a watercolor red fox" --out ./generated --size 1024x1024 --quality xhigh
 python -m src.agent audit ./generated/<file>.png --prompt "a watercolor red fox"
 python -m src.agent pipeline "a watercolor red fox" --out ./generated --attempts 2
 ```
 
+`--quality` accepts `auto`, `low`, `medium`, `high`, `xhigh`, `max`; the last two
+are only available on the gpt-image-2.5 models.
 `--usage` prints request and token counts to stderr so you can watch spend.
 `audit` and `pipeline` exit 0 on a passing verdict and 1 otherwise, so they
 can gate a script. Generated files land in `generated/` (git-ignored).
@@ -40,7 +42,7 @@ can gate a script. Generated files land in `generated/` (git-ignored).
 | `OPENAI_API_KEY` | required | Your OpenAI key |
 | `OPENAI_AGENT_MODEL` | `gpt-4.1-mini` | Model for the assistant and for orchestrating image generation |
 | `OPENAI_AUDITOR_MODEL` | `gpt-6-astra` | Vision model used by the auditor |
-| `OPENAI_IMAGE_MODEL` | `gpt-image-1` | Model behind the `image_generation` tool (e.g. `gpt-image-2`) |
+| `OPENAI_IMAGE_MODEL` | `gpt-image-2.5-sunburst` | Model behind the `image_generation` tool. Sunburst is the highest-fidelity variant; `gpt-image-2.5-flare` is the faster, cheaper-latency sibling with the same API |
 | `OPENAI_AGENT_MAX_TURNS` | `10` | Cap on model/tool round-trips per run |
 | `OPENAI_AGENT_TRACING` | `1` | Set `0` to disable OpenAI tracing uploads |
 

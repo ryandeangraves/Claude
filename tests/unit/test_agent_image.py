@@ -82,7 +82,7 @@ class TestImageAgent:
         assert len(agent.tools) == 1
         cfg = agent.tools[0].tool_config
         assert cfg["type"] == "image_generation"
-        assert cfg["model"] == "gpt-image-1"
+        assert cfg["model"] == "gpt-image-2.5-sunburst"
         assert cfg["size"] == "1536x1024"
         assert cfg["quality"] == "high"
 
