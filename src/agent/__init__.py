@@ -1,32 +1,39 @@
-"""OpenAI Agent integration.
+"""OpenAI agents for the Second Brain app.
 
-Three agents are available:
-
-* :func:`run_agent`          - general assistant with notification tools
-* :func:`generate_image`     - image generation (hosted image_generation tool)
-* :func:`audit_image`        - structured audit of an image against a checklist
-* :func:`generate_and_audit` - generate, then audit, with optional retry
+* Frank (:func:`run_frank`) is the top-level assistant the user talks to. He
+  issues jobs to Jack ("Hey Frank, audit this" / "draw me a fox").
+* Jack (:func:`run_jack`) does the jobs: validates contact details, drafts
+  notifications, generates images, and audits text or images.
+* The Auditor model (:func:`audit_text`, :func:`audit_image`) is what Jack's
+  audit tools run; it returns a structured :class:`AuditReport`.
+* :func:`run_audited` runs Jack, audits everything he produced, and retries
+  with the Auditor's suggested fix. Frank uses it when ``auto_audit`` is on.
 """
-from src.agent.agent import AgentRunResult, build_agent, run_agent
-from src.agent.auditor import AuditReport, audit_image, build_auditor_agent
+from src.agent.auditor import AuditReport, audit_image, audit_text, build_auditor
 from src.agent.config import AgentConfig, ConfigError, load_config
-from src.agent.image import GeneratedImage, ImageRunResult, build_image_agent, generate_image
-from src.agent.pipeline import PipelineResult, generate_and_audit
+from src.agent.frank import FrankContext, FrankResult, build_frank, run_frank
+from src.agent.image import GeneratedImage
+from src.agent.jack import JackContext, JackResult, build_jack, run_jack
+from src.agent.pipeline import Attempt, PipelineResult, run_audited
 
 __all__ = [
     "AgentConfig",
-    "AgentRunResult",
+    "Attempt",
     "AuditReport",
     "ConfigError",
+    "FrankContext",
+    "FrankResult",
     "GeneratedImage",
-    "ImageRunResult",
+    "JackContext",
+    "JackResult",
     "PipelineResult",
     "audit_image",
-    "build_agent",
-    "build_auditor_agent",
-    "build_image_agent",
-    "generate_and_audit",
-    "generate_image",
+    "audit_text",
+    "build_auditor",
+    "build_frank",
+    "build_jack",
     "load_config",
-    "run_agent",
+    "run_audited",
+    "run_frank",
+    "run_jack",
 ]
