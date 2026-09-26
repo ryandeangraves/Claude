@@ -1,9 +1,10 @@
 """OpenAI agents for the Second Brain app.
 
-* Frank (:func:`run_frank`) is the top-level assistant the user talks to. He
-  issues jobs to Jack ("Hey Frank, audit this" / "draw me a fox").
-* Jack (:func:`run_jack`) does the jobs: validates contact details, drafts
-  notifications, generates images, and audits text or images.
+* Frank (:func:`run_frank`) is the assistant the user talks to. He does his
+  own work (questions, contact validation, notification drafts) and issues
+  jobs to specialists for the rest.
+* Jack (:func:`run_jack`) is the specialist for image-related tasks and
+  large audits ("Hey Frank, draw me a fox" / "Hey Frank, audit this image").
 * The Auditor model (:func:`audit_text`, :func:`audit_image`) is what Jack's
   audit tools run; it returns a structured :class:`AuditReport`.
 * :func:`run_audited` runs Jack, audits everything he produced, and retries

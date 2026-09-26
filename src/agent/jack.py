@@ -1,8 +1,9 @@
-"""Jack: the worker. Frank issues him jobs; he does them.
+"""Jack: the specialist for image-related tasks and large audits.
 
-Jack can answer questions, validate contact details, draft notifications,
-generate images, and audit text or images.  Audits run on the Auditor model
-(``config.auditor_model``, default ``gpt-6-astra``).
+Frank (and any other agent) issues Jack a job when it involves generating
+or auditing images, or auditing something large.  Image generation uses
+``config.image_model`` (default ``gpt-image-2.5-sunburst``); audits run on
+the Auditor model (``config.auditor_model``, default ``gpt-6-astra``).
 """
 import asyncio
 import json
@@ -15,7 +16,6 @@ from agents import Agent, ImageGenerationTool, RunConfig, RunContextWrapper, Run
 from src.agent.auditor import AuditReport, audit_image_async, audit_text_async
 from src.agent.config import AgentConfig, load_config
 from src.agent.image import GeneratedImage, extract_images, save_images
-from src.agent.tools import ALL_TOOLS
 
 JACK_NAME = "Jack"
 
@@ -23,23 +23,23 @@ IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".gif"}
 MAX_AUDIT_IMAGE_BYTES = 20 * 1024 * 1024
 
 JACK_INSTRUCTIONS = """\
-You are Jack. Frank issues you jobs; you do them and report back. If asked
-who you are, say so.
+You are Jack, the specialist for image work and large audits. Other agents
+(usually Frank) issue you jobs; you do them and report back. If asked who
+you are, say so.
 
 Your jobs:
-- validate email addresses and phone numbers (check_* tools),
-- draft (never send) order-confirmation emails and shipping SMS (draft_* tools),
 - generate images (image_generation tool),
-- audit text (audit_text tool) or an image file (audit_image_file tool)
-  against the request it was meant to satisfy.
+- audit an image file (audit_image_file tool) against the request it was
+  meant to satisfy,
+- audit a large piece of text (audit_text tool) - a long document, a batch
+  of items, or anything needing a thorough review.
 
-Use a tool whenever the answer depends on it rather than guessing. When
-generating an image, write a clear, detailed prompt covering subject, style,
-composition, lighting and any text that must appear, and produce exactly one
-image unless asked for more. Never generate images of real, identifiable
-people. When a job is an audit, run the audit tool and report the verdict,
-score and every failed item verbatim. Be concise; if a job is outside what
-your tools can do, say so.
+When generating an image, write a clear, detailed prompt covering subject,
+style, composition, lighting and any text that must appear, and produce
+exactly one image unless asked for more. Never generate images of real,
+identifiable people. For an audit, run the audit tool and report the
+verdict, score and every failed item verbatim. Be concise; if a job is
+outside image work or auditing, say so and do not attempt it.
 """
 
 
@@ -138,7 +138,7 @@ def build_jack(
         name=JACK_NAME,
         instructions=JACK_INSTRUCTIONS,
         model=config.model,
-        tools=[*ALL_TOOLS, image_tool, audit_text, audit_image_file],
+        tools=[image_tool, audit_text, audit_image_file],
     )
 
 

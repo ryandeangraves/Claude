@@ -1,4 +1,5 @@
-"""Command-line entry point. You talk to Frank; Frank issues jobs to Jack.
+"""Command-line entry point. You talk to Frank. He does his own work and
+sends image tasks and large audits to Jack.
 
     python -m src.agent "Hey Frank, draw a watercolor red fox"
     python -m src.agent "Hey Frank, audit generated/<file>.png against 'a watercolor red fox'"
@@ -114,7 +115,7 @@ def main(argv=None) -> int:
     _add_common(fr)
     fr.set_defaults(func=_cmd_frank)
 
-    jk = sub.add_parser("jack", help="Give Jack a job directly.")
+    jk = sub.add_parser("jack", help="Give Jack an image or large-audit job directly.")
     jk.add_argument("prompt")
     jk.add_argument("--size", default="auto")
     jk.add_argument("--quality", default="auto", choices=["auto", "low", "medium", "high", "xhigh", "max"])

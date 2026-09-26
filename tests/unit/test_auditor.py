@@ -21,7 +21,8 @@ from src.agent.auditor import (
     build_image_audit_input,
     build_text_audit_input,
 )
-from src.agent.frank import FRANK_NAME, issue_job
+from src.agent.frank import FRANK_NAME, SPECIALIST_TOOLS, issue_job_to_jack
+from src.agent.tools import ALL_TOOLS
 from src.agent.image import GeneratedImage, extract_images, save_images
 from src.agent.jack import JackResult
 from tests.unit.agent_helpers import PNG_B64, PNG_BYTES, FakeRunResult, config, image_call, report, stub_runner
@@ -215,8 +216,8 @@ def _invoke_issue_job(fc, request):
     import json
     from agents.tool_context import ToolContext
     args = json.dumps({"request": request})
-    ctx = ToolContext(context=fc, tool_name="issue_job", tool_call_id="c1", tool_arguments=args)
-    return asyncio.run(issue_job.on_invoke_tool(ctx, args))
+    ctx = ToolContext(context=fc, tool_name="issue_job_to_jack", tool_call_id="c1", tool_arguments=args)
+    return asyncio.run(issue_job_to_jack.on_invoke_tool(ctx, args))
 
 
 class TestFrank:
@@ -224,8 +225,11 @@ class TestFrank:
         agent = build_frank(config())
         assert agent.name == FRANK_NAME == "Frank"
         assert agent.model == "gpt-test"
-        assert [t.name for t in agent.tools] == ["issue_job"]
+        names = [t.name for t in agent.tools]
+        assert names == [t.name for t in ALL_TOOLS] + ["issue_job_to_jack"]  # own work + specialists
+        assert [t.name for t in SPECIALIST_TOOLS] == ["issue_job_to_jack"]
         assert "Jack" in agent.instructions and "audit this" in agent.instructions
+        assert "image" in agent.instructions and "large audit" in agent.instructions
 
     def test_issue_job_runs_jack(self, monkeypatch, tmp_path):
         seen = {}

@@ -1,13 +1,16 @@
-"""Frank: the top-level agent the user talks to.
+"""Frank: the agent the user talks to.
 
-Frank holds the conversation and issues jobs to Jack for anything concrete:
-validating contact details, drafting notifications, generating images, and
-auditing text or images ("Hey Frank, audit this").  With a session name,
-Frank remembers earlier turns, so "audit this" can refer to something Jack
-produced previously.
+Frank does his own work - conversation, contact validation, drafting
+notifications, small checks - and issues jobs to specialist agents for the
+rest.  Today the one specialist is Jack, for image-related tasks and large
+audits ("Hey Frank, audit this image").  To add another specialist, write a
+``@function_tool`` like :func:`issue_job_to_jack` and add it to
+``SPECIALIST_TOOLS``.
 
-If ``auto_audit`` is on, every job's output is also audited automatically
-and retried with the Auditor's suggested fix.
+With a session name, Frank remembers earlier turns, so "audit this" can
+refer to something produced previously.  If ``auto_audit`` is on, every job
+sent to Jack is also audited automatically and retried with the Auditor's
+suggested fix.
 """
 import asyncio
 from dataclasses import dataclass, field
@@ -19,6 +22,7 @@ from agents import Agent, RunConfig, RunContextWrapper, Runner, SQLiteSession, f
 from src.agent.config import AgentConfig, load_config
 from src.agent.jack import JackResult, run_jack_async
 from src.agent.pipeline import PipelineResult, run_audited_async
+from src.agent.tools import ALL_TOOLS
 
 FRANK_NAME = "Frank"
 DEFAULT_SESSION_DB = Path("generated") / "frank-sessions.db"
@@ -26,17 +30,22 @@ DEFAULT_SESSION_DB = Path("generated") / "frank-sessions.db"
 FRANK_INSTRUCTIONS = """\
 You are Frank, the Second Brain assistant. If asked who you are, say so.
 
-You talk with the user and decide what needs doing. You do not do concrete
-work yourself: you issue jobs to Jack with the issue_job tool. Jobs include
-validating an email address or phone number, drafting an order confirmation
-or shipping message, generating an image, and auditing a piece of text or an
-image file. Write each job as a clear, self-contained request; when the
-user says "audit this", work out from the conversation what "this" is
-(quote the text, or give the saved image path) and what it was meant to
-satisfy, and put both in the job.
+Do your own work. You answer questions, validate email addresses and phone
+numbers (check_* tools), draft (never send) order-confirmation emails and
+shipping SMS (draft_* tools), and do quick sanity checks on short text
+yourself.
 
-Report Jack's results faithfully, including audit verdicts and failed items.
-Answer general questions directly. Be concise.
+Hand off to specialists only for what they exist for:
+- Jack (issue_job_to_jack): anything image-related - generating an image,
+  auditing an image file - and any large audit: a long document, a batch
+  of items, or anything that needs a thorough, careful review rather than
+  a quick check.
+
+Write each job as a clear, self-contained request. When the user says
+"audit this", work out from the conversation what "this" is (quote the
+text, or give the saved image path) and what it was meant to satisfy, and
+put both in the job. Report a specialist's results faithfully, including
+audit verdicts and failed items. Be concise.
 """
 
 
@@ -94,8 +103,11 @@ def _summarise_pipeline(pipeline: PipelineResult) -> str:
 
 
 @function_tool
-async def issue_job(ctx: RunContextWrapper[FrankContext], request: str) -> str:
-    """Issue a job to Jack and get back his report.
+async def issue_job_to_jack(ctx: RunContextWrapper[FrankContext], request: str) -> str:
+    """Issue a job to Jack, the specialist for image work and large audits.
+
+    Use for generating an image, auditing an image file, or auditing a large
+    piece of text. Do not use for ordinary questions or small checks.
 
     Args:
         request: A clear, self-contained description of the job. For an
@@ -112,13 +124,17 @@ async def issue_job(ctx: RunContextWrapper[FrankContext], request: str) -> str:
     return _summarise_job(job)
 
 
+# One tool per specialist agent Frank can hand work to.
+SPECIALIST_TOOLS = [issue_job_to_jack]
+
+
 def build_frank(config: AgentConfig) -> Agent[FrankContext]:
     """Create Frank (no network calls)."""
     return Agent[FrankContext](
         name=FRANK_NAME,
         instructions=FRANK_INSTRUCTIONS,
         model=config.model,
-        tools=[issue_job],
+        tools=[*ALL_TOOLS, *SPECIALIST_TOOLS],
     )
 
 

@@ -1,15 +1,25 @@
 # Frank and Jack
 
-Two OpenAI agents built on the [OpenAI Agents SDK](https://github.com/openai/openai-agents-python).
+OpenAI agents built on the [OpenAI Agents SDK](https://github.com/openai/openai-agents-python).
+Frank is the one you talk to; he does his own work and hands specific kinds
+of jobs to specialist agents. Jack is the first specialist.
 
 | Agent | Role | Model |
 |---|---|---|
-| **Frank** | The one you talk to. Holds the conversation and issues jobs to Jack. Never does the work himself. | `OPENAI_AGENT_MODEL` (default `gpt-4.1-mini`) |
-| **Jack** | Does the jobs: validates emails and phone numbers, drafts order notifications, generates images, audits text and images. | `OPENAI_AGENT_MODEL`; images via `OPENAI_IMAGE_MODEL` (default `gpt-image-2.5-sunburst`) |
+| **Frank** | The one you talk to. Answers questions, validates emails and phone numbers, drafts order notifications, does quick checks himself. Issues jobs to specialists for the rest. | `OPENAI_AGENT_MODEL` (default `gpt-4.1-mini`) |
+| **Jack** | Specialist for image-related tasks and large audits: generates images, audits image files, audits long or multi-item text. | `OPENAI_AGENT_MODEL`; images via `OPENAI_IMAGE_MODEL` (default `gpt-image-2.5-sunburst`) |
 | Auditor model | What Jack's audit tools run. Returns a structured pass/fail report. | `OPENAI_AUDITOR_MODEL` (default `gpt-6-astra`) |
 
-So "Hey Frank, audit this" becomes a job Frank issues to Jack, and Jack runs
-the Auditor model on it. "Hey Frank, draw me a fox" becomes an image job.
+So "Hey Frank, draw me a fox" and "Hey Frank, audit this image" become jobs
+Frank issues to Jack. "Hey Frank, draft the confirmation email for order 42"
+Frank does himself.
+
+### Adding another specialist
+
+Each specialist is one `@function_tool` on Frank (see `issue_job_to_jack` in
+`frank.py`). Write a similar tool that runs the new agent, add it to
+`SPECIALIST_TOOLS`, and describe when Frank should use it in his
+instructions.
 
 ## Setup
 
@@ -28,7 +38,7 @@ The key is read only from the environment. It is never logged, and
 python -m src.agent "Hey Frank, draw a watercolor red fox"
 python -m src.agent "Hey Frank, audit generated/<file>.png against 'a watercolor red fox'"
 python -m src.agent "Hey Frank, draft a confirmation email for order 42 to a@example.com, total 19.99"
-python -m src.agent "Hey Frank, audit that draft" --session ryan
+python -m src.agent "Hey Frank, audit that fox" --session ryan
 ```
 
 `--session NAME` gives Frank memory across runs, stored in
@@ -45,9 +55,10 @@ saved (default `generated/`, git-ignored).
 python -m src.agent "Hey Frank, draw a watercolor red fox" --auto-audit --attempts 2
 ```
 
-With `--auto-audit`, every job's text and every generated image is audited
-automatically, and a failing job is retried with the Auditor's suggested fix
-up to `--attempts` times. The exit code is 0 only if every job passed.
+With `--auto-audit`, every job Frank sends to Jack has its text and every
+generated image audited automatically, and a failing job is retried with the
+Auditor's suggested fix up to `--attempts` times. The exit code is 0 only if
+every job passed.
 
 ## Jack and the Auditor directly
 
@@ -79,7 +90,7 @@ from src.agent import run_frank, run_jack, audit_image, run_audited
 
 r = run_frank("Hey Frank, draw a watercolor red fox", out_dir="generated", session="ryan")
 print(r.output)                      # Frank's reply
-for job in r.jobs:                   # what Jack did
+for job in r.jobs:                   # jobs Frank sent to Jack
     print(job.output, [i.path for i in job.images], [a.verdict for a in job.audits])
 
 job = run_jack("Audit generated/fox.png against 'a watercolor red fox'")

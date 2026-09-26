@@ -91,17 +91,17 @@ class TestBuildJack:
         assert "Jack" in agent.instructions
         assert agent.model == "gpt-test"
         names = [t.name for t in agent.tools]
-        assert names == [t.name for t in ALL_TOOLS] + ["image_generation", "audit_text", "audit_image_file"]
-        image_tool = agent.tools[len(ALL_TOOLS)]
+        assert names == ["image_generation", "audit_text", "audit_image_file"]
+        assert not set(names) & {t.name for t in ALL_TOOLS}  # notification tools belong to Frank
+        image_tool = agent.tools[0]
         assert image_tool.tool_config["model"] == "gpt-image-2.5-sunburst"
         assert image_tool.tool_config["size"] == "1536x1024"
         assert image_tool.tool_config["quality"] == "high"
 
     def test_image_model_override(self):
         cfg = config(image_model="gpt-image-2")
-        idx = len(ALL_TOOLS)
-        assert build_jack(cfg).tools[idx].tool_config["model"] == "gpt-image-2"
-        assert build_jack(cfg, image_model="gpt-image-1.5").tools[idx].tool_config["model"] == "gpt-image-1.5"
+        assert build_jack(cfg).tools[0].tool_config["model"] == "gpt-image-2"
+        assert build_jack(cfg, image_model="gpt-image-1.5").tools[0].tool_config["model"] == "gpt-image-1.5"
 
     def test_tool_names(self):
         assert {t.name for t in ALL_TOOLS} == {
@@ -113,7 +113,7 @@ class TestBuildJack:
 
 
 # ---------------------------------------------------------------------------
-# Tools (invoked the way the SDK invokes them: JSON args in, string out)
+# Frank's notification tools (invoked the way the SDK invokes them: JSON args in, string out)
 # ---------------------------------------------------------------------------
 
 
