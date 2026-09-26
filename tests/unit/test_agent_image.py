@@ -30,7 +30,7 @@ PNG_B64 = base64.b64encode(PNG_BYTES).decode()
 
 def _config() -> AgentConfig:
     return AgentConfig(api_key="sk-test-0123456789abcdefghijklmnop", model="gpt-test",
-                       max_turns=3, tracing_enabled=False)
+                       auditor_model="gpt-6-astra", max_turns=3, tracing_enabled=False)
 
 
 @dataclass
@@ -82,8 +82,14 @@ class TestImageAgent:
         assert len(agent.tools) == 1
         cfg = agent.tools[0].tool_config
         assert cfg["type"] == "image_generation"
+        assert cfg["model"] == "gpt-image-1"
         assert cfg["size"] == "1536x1024"
         assert cfg["quality"] == "high"
+
+    def test_build_image_model_override(self):
+        cfg = AgentConfig(api_key="sk-test-0123456789abcdefghijklmnop", image_model="gpt-image-2")
+        assert build_image_agent(cfg).tools[0].tool_config["model"] == "gpt-image-2"
+        assert build_image_agent(cfg, image_model="gpt-image-1.5").tools[0].tool_config["model"] == "gpt-image-1.5"
 
     def test_extract_images_skips_empty_and_non_image_items(self):
         items = [
@@ -144,6 +150,7 @@ class TestAuditor:
     def test_build(self):
         agent = build_auditor_agent(_config())
         assert agent.name == AUDITOR_NAME
+        assert agent.model == "gpt-6-astra"
         assert agent.output_type is AuditReport
 
     def test_build_audit_input_from_bytes(self):

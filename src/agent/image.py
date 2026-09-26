@@ -17,7 +17,6 @@ from openai.types.responses.response_output_item import ImageGenerationCall
 from src.agent.config import AgentConfig, load_config
 
 IMAGE_AGENT_NAME = "Image Generator"
-DEFAULT_IMAGE_MODEL = "gpt-image-1"
 
 IMAGE_INSTRUCTIONS = """\
 You are an image-generation assistant.
@@ -55,17 +54,20 @@ class ImageRunResult:
 def build_image_agent(
     config: AgentConfig,
     *,
-    image_model: str = DEFAULT_IMAGE_MODEL,
+    image_model: Optional[str] = None,
     size: str = "1024x1024",
     quality: str = "auto",
     output_format: str = "png",
     background: str = "auto",
 ) -> Agent:
-    """Create the image-generation agent (no network calls)."""
+    """Create the image-generation agent (no network calls).
+
+    ``image_model`` defaults to ``config.image_model`` (env ``OPENAI_IMAGE_MODEL``).
+    """
     tool = ImageGenerationTool(
         tool_config={
             "type": "image_generation",
-            "model": image_model,
+            "model": image_model or config.image_model,
             "size": size,
             "quality": quality,
             "output_format": output_format,

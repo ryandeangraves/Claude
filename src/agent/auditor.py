@@ -57,7 +57,7 @@ def build_auditor_agent(config: AgentConfig) -> Agent:
     return Agent(
         name=AUDITOR_NAME,
         instructions=AUDITOR_INSTRUCTIONS,
-        model=config.model,
+        model=config.auditor_model,
         output_type=AuditReport,
     )
 

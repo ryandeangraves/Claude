@@ -6,7 +6,7 @@ Agents built on the [OpenAI Agents SDK](https://github.com/openai/openai-agents-
 |---|---|---|
 | Assistant | `run_agent` / `chat` | Validates contact details and drafts order notifications using `src/notifications` as tools |
 | Image Generator | `generate_image` / `image` | Generates images with the hosted `image_generation` tool (`gpt-image-1`) and saves them to disk |
-| Image Auditor | `audit_image` / `audit` | Inspects an image against a checklist and returns a structured pass/fail report |
+| Image Auditor | `audit_image` / `audit` | Inspects an image with **gpt-6-astra** against a checklist and returns a structured pass/fail report |
 | Pipeline | `generate_and_audit` / `pipeline` | Generates, audits, and retries with the auditor's suggested prompt fix |
 
 ## Setup
@@ -38,12 +38,14 @@ can gate a script. Generated files land in `generated/` (git-ignored).
 | Variable | Default | Purpose |
 |---|---|---|
 | `OPENAI_API_KEY` | required | Your OpenAI key |
-| `OPENAI_AGENT_MODEL` | `gpt-4.1-mini` | Text model for all agents (the auditor needs a vision-capable model, which this is) |
+| `OPENAI_AGENT_MODEL` | `gpt-4.1-mini` | Model for the assistant and for orchestrating image generation |
+| `OPENAI_AUDITOR_MODEL` | `gpt-6-astra` | Vision model used by the auditor |
+| `OPENAI_IMAGE_MODEL` | `gpt-image-1` | Model behind the `image_generation` tool (e.g. `gpt-image-2`) |
 | `OPENAI_AGENT_MAX_TURNS` | `10` | Cap on model/tool round-trips per run |
 | `OPENAI_AGENT_TRACING` | `1` | Set `0` to disable OpenAI tracing uploads |
 
-The image model, size, quality, format and background are arguments to
-`build_image_agent` / `generate_image`.
+Size, quality, format and background are arguments to `build_image_agent` /
+`generate_image`; `image_model=` there overrides the env default.
 
 ## Use from code
 

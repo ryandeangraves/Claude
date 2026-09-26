@@ -18,7 +18,13 @@ from src.agent import (
     run_agent,
 )
 from src.agent.agent import AGENT_NAME
-from src.agent.config import DEFAULT_MAX_TURNS, DEFAULT_MODEL, AgentConfig
+from src.agent.config import (
+    DEFAULT_AUDITOR_MODEL,
+    DEFAULT_IMAGE_MODEL,
+    DEFAULT_MAX_TURNS,
+    DEFAULT_MODEL,
+    AgentConfig,
+)
 from src.agent.tools import ALL_TOOLS
 
 FAKE_KEY = "sk-test-0123456789abcdefghijklmnop"
@@ -40,6 +46,8 @@ class TestLoadConfig:
         cfg = load_config({"OPENAI_API_KEY": FAKE_KEY})
         assert cfg.api_key == FAKE_KEY
         assert cfg.model == DEFAULT_MODEL
+        assert cfg.auditor_model == DEFAULT_AUDITOR_MODEL == "gpt-6-astra"
+        assert cfg.image_model == DEFAULT_IMAGE_MODEL
         assert cfg.max_turns == DEFAULT_MAX_TURNS
         assert cfg.tracing_enabled is True
 
@@ -48,11 +56,15 @@ class TestLoadConfig:
             {
                 "OPENAI_API_KEY": FAKE_KEY,
                 "OPENAI_AGENT_MODEL": "gpt-4.1",
+                "OPENAI_AUDITOR_MODEL": "gpt-6-sol",
+                "OPENAI_IMAGE_MODEL": "gpt-image-2",
                 "OPENAI_AGENT_MAX_TURNS": "5",
                 "OPENAI_AGENT_TRACING": "false",
             }
         )
         assert cfg.model == "gpt-4.1"
+        assert cfg.auditor_model == "gpt-6-sol"
+        assert cfg.image_model == "gpt-image-2"
         assert cfg.max_turns == 5
         assert cfg.tracing_enabled is False
 

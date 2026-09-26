@@ -8,6 +8,8 @@ from dataclasses import dataclass
 from typing import Mapping, Optional
 
 DEFAULT_MODEL = "gpt-4.1-mini"
+DEFAULT_AUDITOR_MODEL = "gpt-6-astra"
+DEFAULT_IMAGE_MODEL = "gpt-image-1"
 DEFAULT_MAX_TURNS = 10
 
 
@@ -19,12 +21,15 @@ class ConfigError(Exception):
 class AgentConfig:
     api_key: str
     model: str = DEFAULT_MODEL
+    auditor_model: str = DEFAULT_AUDITOR_MODEL
+    image_model: str = DEFAULT_IMAGE_MODEL
     max_turns: int = DEFAULT_MAX_TURNS
     tracing_enabled: bool = True
 
     def __repr__(self) -> str:  # never leak the key in logs / tracebacks
         return (
             f"AgentConfig(api_key='***', model={self.model!r}, "
+            f"auditor_model={self.auditor_model!r}, image_model={self.image_model!r}, "
             f"max_turns={self.max_turns}, tracing_enabled={self.tracing_enabled})"
         )
 
@@ -39,7 +44,9 @@ def load_config(env: Optional[Mapping[str, str]] = None) -> AgentConfig:
     Recognised variables:
 
     * ``OPENAI_API_KEY``      (required)
-    * ``OPENAI_AGENT_MODEL``  (optional, default ``gpt-4.1-mini``)
+    * ``OPENAI_AGENT_MODEL``  (optional, default ``gpt-4.1-mini``) - assistant + image orchestration
+    * ``OPENAI_AUDITOR_MODEL`` (optional, default ``gpt-6-astra``) - auditor (needs vision)
+    * ``OPENAI_IMAGE_MODEL``  (optional, default ``gpt-image-1``) - image_generation tool
     * ``OPENAI_AGENT_MAX_TURNS`` (optional, default 10)
     * ``OPENAI_AGENT_TRACING`` (optional, ``0``/``false`` disables tracing)
     """
@@ -58,6 +65,8 @@ def load_config(env: Optional[Mapping[str, str]] = None) -> AgentConfig:
         )
 
     model = (env.get("OPENAI_AGENT_MODEL") or DEFAULT_MODEL).strip()
+    auditor_model = (env.get("OPENAI_AUDITOR_MODEL") or DEFAULT_AUDITOR_MODEL).strip()
+    image_model = (env.get("OPENAI_IMAGE_MODEL") or DEFAULT_IMAGE_MODEL).strip()
 
     raw_turns = (env.get("OPENAI_AGENT_MAX_TURNS") or "").strip()
     if raw_turns:
@@ -76,6 +85,8 @@ def load_config(env: Optional[Mapping[str, str]] = None) -> AgentConfig:
     return AgentConfig(
         api_key=api_key,
         model=model,
+        auditor_model=auditor_model,
+        image_model=image_model,
         max_turns=max_turns,
         tracing_enabled=tracing_enabled,
     )
