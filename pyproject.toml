@@ -6,6 +6,10 @@ build-backend = "setuptools.backends.legacy:build"
 name = "claude-app"
 version = "0.1.0"
 requires-python = ">=3.10"
+dependencies = ["openai-agents>=0.22,<1"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-cov>=5"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

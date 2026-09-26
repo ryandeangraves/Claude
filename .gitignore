@@ -5,3 +5,6 @@ __pycache__/
 coverage.json
 htmlcov/
 .pytest_cache/
+.env
+.env.local
+generated/
